@@ -1,6 +1,6 @@
 ﻿namespace SwissArmyKnife
 {
-    partial class RegistrationForm
+    partial class LoginForm
     {
         /// <summary>
         ///  Required designer variable.
@@ -19,7 +19,6 @@
             }
             base.Dispose(disposing);
         }
-
         #region Windows Form Designer generated code
 
         /// <summary>
@@ -28,18 +27,32 @@
         /// </summary>
         private void InitializeComponent()
         {
+            RegistrationForm = new Button();
             SuspendLayout();
             // 
             // RegistrationForm
             // 
+            RegistrationForm.Location = new Point(273, 222);
+            RegistrationForm.Name = "RegistrationForm";
+            RegistrationForm.Size = new Size(201, 93);
+            RegistrationForm.TabIndex = 0;
+            RegistrationForm.Text = "Sign Up";
+            RegistrationForm.UseVisualStyleBackColor = true;
+            RegistrationForm.Click += RegistrationForm_Click;
+            // 
+            // LoginForm
+            // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Name = "RegistrationForm";
-            Text = "Registration";
+            Controls.Add(RegistrationForm);
+            Name = "LoginForm";
+            Text = "Login";
             ResumeLayout(false);
         }
 
         #endregion
+
+        private Button RegistrationForm;
     }
 }
