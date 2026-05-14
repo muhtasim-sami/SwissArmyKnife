@@ -13,5 +13,10 @@ namespace SwissArmyKnife
             this.Hide();
             registrationForm.ShowDialog();
         }
+
+        private void LoginForm_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

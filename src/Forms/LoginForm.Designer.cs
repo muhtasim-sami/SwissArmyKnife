@@ -48,6 +48,7 @@
             Controls.Add(RegistrationForm);
             Name = "LoginForm";
             Text = "Login";
+            Load += LoginForm_Load;
             ResumeLayout(false);
         }
 
