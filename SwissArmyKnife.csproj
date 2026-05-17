@@ -15,6 +15,12 @@
     <Compile Update="src\Forms\RegistrationForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="src\PenTestToolkit\NetworkScanning\SSHScannerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="src\PenTestToolkit\NetworkScanning\NetworkScannerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="src\PenTestToolkit\NetworkScanning\NetworkScannerForm.cs">
       <SubType>Form</SubType>
     </Compile>
