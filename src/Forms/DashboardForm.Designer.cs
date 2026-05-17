@@ -1,6 +1,6 @@
 ﻿namespace SwissArmyKnife
 {
-    partial class RegistrationForm
+    partial class DashboardForm
     {
         /// <summary>
         ///  Required designer variable.
@@ -27,32 +27,33 @@
         /// </summary>
         private void InitializeComponent()
         {
-            LoginForm = new Button();
+            PentestToolKitForm = new Button();
             SuspendLayout();
             // 
-            // LoginForm
+            // PentestToolKitForm
             // 
-            LoginForm.Location = new Point(310, 152);
-            LoginForm.Name = "LoginForm";
-            LoginForm.Size = new Size(174, 85);
-            LoginForm.TabIndex = 0;
-            LoginForm.Text = "Login";
-            LoginForm.UseVisualStyleBackColor = true;
-            LoginForm.Click += LoginForm_Click;
+            PentestToolKitForm.Location = new Point(264, 224);
+            PentestToolKitForm.Name = "PentestToolKitForm";
+            PentestToolKitForm.Size = new Size(174, 85);
+            PentestToolKitForm.TabIndex = 0;
+            PentestToolKitForm.Text = "Network Scanning";
+            PentestToolKitForm.UseVisualStyleBackColor = true;
+            PentestToolKitForm.Click += NerworkScannerForm_Click;
             // 
-            // RegistrationForm
+            // DashboardForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Controls.Add(LoginForm);
-            Name = "RegistrationForm";
-            Text = "Registration";
+            Controls.Add(PentestToolKitForm);
+            Name = "DashboardForm";
+            Text = "Dashboard";
+            Load += NerworkScannerForm_Load;
             ResumeLayout(false);
         }
 
         #endregion
 
-        private Button LoginForm;
+        private Button PentestToolKitForm;
     }
 }

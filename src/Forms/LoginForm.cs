@@ -18,5 +18,13 @@ namespace SwissArmyKnife
         {
 
         }
+
+        private void DashboardButton_Click(object sender, EventArgs e)
+        {
+            DashboardForm dashboardForm = new DashboardForm();
+            this.Hide();
+            dashboardForm.ShowDialog();
+            this.Show();
+        }
     }
 }
