@@ -28,11 +28,12 @@
         private void InitializeComponent()
         {
             PentestToolKitForm = new Button();
+            WebSecurityAuditButton = new Button();
             SuspendLayout();
             // 
             // PentestToolKitForm
             // 
-            PentestToolKitForm.Location = new Point(264, 224);
+            PentestToolKitForm.Location = new Point(285, 143);
             PentestToolKitForm.Name = "PentestToolKitForm";
             PentestToolKitForm.Size = new Size(174, 85);
             PentestToolKitForm.TabIndex = 0;
@@ -40,11 +41,22 @@
             PentestToolKitForm.UseVisualStyleBackColor = true;
             PentestToolKitForm.Click += NerworkScannerForm_Click;
             // 
+            // WebSecurityAuditButton
+            // 
+            WebSecurityAuditButton.Location = new Point(285, 265);
+            WebSecurityAuditButton.Name = "WebSecurityAuditButton";
+            WebSecurityAuditButton.Size = new Size(174, 75);
+            WebSecurityAuditButton.TabIndex = 1;
+            WebSecurityAuditButton.Text = "Web Testing";
+            WebSecurityAuditButton.UseVisualStyleBackColor = true;
+            WebSecurityAuditButton.Click += WebSecurityAuditButton_Click;
+            // 
             // DashboardForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(WebSecurityAuditButton);
             Controls.Add(PentestToolKitForm);
             Name = "DashboardForm";
             Text = "Dashboard";
@@ -55,5 +67,6 @@
         #endregion
 
         private Button PentestToolKitForm;
+        private Button WebSecurityAuditButton;
     }
 }

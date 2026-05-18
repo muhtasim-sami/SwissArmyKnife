@@ -27,6 +27,7 @@
     <Compile Update="src\PenTestToolkit\NetworkScanning\SSHScannerForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="src\PenTestToolkit\WebPentest\WebSecurityAuditForm.cs" />
   </ItemGroup>
 
 </Project>

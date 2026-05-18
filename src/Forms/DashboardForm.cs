@@ -7,7 +7,7 @@ namespace SwissArmyKnife
         {
             InitializeComponent();
         }
-        
+
         private void NerworkScannerForm_Click(object sender, EventArgs e)
         {
 
@@ -21,6 +21,13 @@ namespace SwissArmyKnife
         {
 
         }
-        
+
+        private void WebSecurityAuditButton_Click(object sender, EventArgs e)
+        {
+            WebSecurityAuditForm webSecurityAuditForm = new WebSecurityAuditForm();
+            this.Hide();
+            webSecurityAuditForm.ShowDialog();
+            this.Show();
+        }
     }
 }
