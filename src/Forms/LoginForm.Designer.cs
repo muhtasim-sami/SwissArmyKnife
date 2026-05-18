@@ -30,6 +30,7 @@
             RegistrationForm = new Button();
             DashboardButton = new Button();
             ViewerButton = new Button();
+            RegularUserButton = new Button();
             SuspendLayout();
             // 
             // RegistrationForm
@@ -62,11 +63,22 @@
             ViewerButton.UseVisualStyleBackColor = true;
             ViewerButton.Click += ViewerButton_Click;
             // 
+            // RegularUserButton
+            // 
+            RegularUserButton.Location = new Point(559, 262);
+            RegularUserButton.Name = "RegularUserButton";
+            RegularUserButton.Size = new Size(202, 59);
+            RegularUserButton.TabIndex = 3;
+            RegularUserButton.Text = "Regular User";
+            RegularUserButton.UseVisualStyleBackColor = true;
+            RegularUserButton.Click += RegularUserButton_Click;
+            // 
             // LoginForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(RegularUserButton);
             Controls.Add(ViewerButton);
             Controls.Add(DashboardButton);
             Controls.Add(RegistrationForm);
@@ -81,5 +93,6 @@
         private Button RegistrationForm;
         private Button DashboardButton;
         private Button ViewerButton;
+        private Button RegularUserButton;
     }
 }

@@ -34,5 +34,13 @@ namespace SwissArmyKnife
             ViewerForm.ShowDialog();
             this.Show();
         }
+
+        private void RegularUserButton_Click(object sender, EventArgs e)
+        {
+            RegularUserForm RegularUserForm = new RegularUserForm();
+            this.Hide();
+            RegularUserForm.ShowDialog();
+            this.Show();
+        }
     }
 }
