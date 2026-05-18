@@ -27,41 +27,6 @@
         /// </summary>
         private void InitializeComponent(string title, string content)
         {
-            RegistrationForm = new Button();
-            DashboardButton = new Button();
-            SuspendLayout();
-            // 
-            // RegistrationForm
-            // 
-            RegistrationForm.Location = new Point(269, 171);
-            RegistrationForm.Name = "RegistrationForm";
-            RegistrationForm.Size = new Size(205, 59);
-            RegistrationForm.TabIndex = 0;
-            RegistrationForm.Text = "Sign Up";
-            RegistrationForm.UseVisualStyleBackColor = true;
-            RegistrationForm.Click += RegistrationForm_Click;
-            // 
-            // DashboardButton
-            // 
-            DashboardButton.Location = new Point(269, 262);
-            DashboardButton.Name = "DashboardButton";
-            DashboardButton.Size = new Size(205, 70);
-            DashboardButton.TabIndex = 1;
-            DashboardButton.Text = "Dashboard";
-            DashboardButton.UseVisualStyleBackColor = true;
-            DashboardButton.Click += DashboardButton_Click;
-            // 
-            // LoginForm
-            // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
-            Controls.Add(DashboardButton);
-            Controls.Add(RegistrationForm);
-            Name = "LoginForm";
-            Text = "Login";
-            Load += LoginForm_Load;
-            ResumeLayout(false);
             // 
             // Title
             // 
@@ -97,7 +62,8 @@
 
         #endregion
 
-        private Button RegistrationForm;
-        private Button DashboardButton;
+
+        private RichTextBox rtbContent;
+        private Button btnClose;
     }
 }

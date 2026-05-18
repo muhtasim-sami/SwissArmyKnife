@@ -26,5 +26,13 @@ namespace SwissArmyKnife
             dashboardForm.ShowDialog();
             this.Show();
         }
+
+        private void ViewerButton_Click(object sender, EventArgs e)
+        {
+            ViewerForm ViewerForm = new ViewerForm();
+            this.Hide();
+            ViewerForm.ShowDialog();
+            this.Show();
+        }
     }
 }

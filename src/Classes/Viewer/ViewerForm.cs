@@ -15,27 +15,6 @@ namespace SwissArmyKnife
             InitializeComponent();
         }
 
-        private void RegistrationForm_Click(object sender, EventArgs e)
-        {
-            RegistrationForm registrationForm = new RegistrationForm();
-            this.Hide();
-            registrationForm.ShowDialog();
-        }
-
-        private void LoginForm_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void DashboardButton_Click(object sender, EventArgs e)
-        {
-            DashboardForm dashboardForm = new DashboardForm();
-            this.Hide();
-            dashboardForm.ShowDialog();
-            this.Show();
-        }
-
-
         public ViewerForm(string username, int userId) : this()
         {
             currentUsername = username;
@@ -44,7 +23,7 @@ namespace SwissArmyKnife
 
         private void WireEvents()
         {
-            lvReports.SelectedIndexChanged += LvReports_SelectedIndexChanged;
+            
         }
 
         private void ViewerForm_Load(object sender, EventArgs e)
