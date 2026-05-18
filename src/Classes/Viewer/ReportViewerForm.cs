@@ -1,0 +1,34 @@
+namespace SwissArmyKnife
+{
+
+    public partial class ReportViewerForm : Form
+    {
+
+        private RichTextBox rtbContent;
+        private Button btnClose;
+        public ReportViewerForm(string title, string content)
+        {
+            InitializeComponent(title, content);
+        }
+
+        private void RegistrationForm_Click(object sender, EventArgs e)
+        {
+            RegistrationForm registrationForm = new RegistrationForm();
+            this.Hide();
+            registrationForm.ShowDialog();
+        }
+
+        private void LoginForm_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void DashboardButton_Click(object sender, EventArgs e)
+        {
+            DashboardForm dashboardForm = new DashboardForm();
+            this.Hide();
+            dashboardForm.ShowDialog();
+            this.Show();
+        }
+    }
+}
