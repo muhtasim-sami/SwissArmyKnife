@@ -31,6 +31,7 @@
             DashboardButton = new Button();
             ViewerButton = new Button();
             RegularUserButton = new Button();
+            PremiumUserButton = new Button();
             SuspendLayout();
             // 
             // RegistrationForm
@@ -55,7 +56,7 @@
             // 
             // ViewerButton
             // 
-            ViewerButton.Location = new Point(559, 171);
+            ViewerButton.Location = new Point(559, 78);
             ViewerButton.Name = "ViewerButton";
             ViewerButton.Size = new Size(202, 59);
             ViewerButton.TabIndex = 2;
@@ -65,7 +66,7 @@
             // 
             // RegularUserButton
             // 
-            RegularUserButton.Location = new Point(559, 262);
+            RegularUserButton.Location = new Point(559, 171);
             RegularUserButton.Name = "RegularUserButton";
             RegularUserButton.Size = new Size(202, 59);
             RegularUserButton.TabIndex = 3;
@@ -73,11 +74,22 @@
             RegularUserButton.UseVisualStyleBackColor = true;
             RegularUserButton.Click += RegularUserButton_Click;
             // 
+            // PremiumUserButton
+            // 
+            PremiumUserButton.Location = new Point(559, 273);
+            PremiumUserButton.Name = "PremiumUserButton";
+            PremiumUserButton.Size = new Size(202, 59);
+            PremiumUserButton.TabIndex = 4;
+            PremiumUserButton.Text = "Premium User";
+            PremiumUserButton.UseVisualStyleBackColor = true;
+            PremiumUserButton.Click += PremiumUserButton_Click;
+            // 
             // LoginForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(PremiumUserButton);
             Controls.Add(RegularUserButton);
             Controls.Add(ViewerButton);
             Controls.Add(DashboardButton);
@@ -94,5 +106,6 @@
         private Button DashboardButton;
         private Button ViewerButton;
         private Button RegularUserButton;
+        private Button PremiumUserButton;
     }
 }

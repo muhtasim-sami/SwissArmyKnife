@@ -9,6 +9,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Update="src\Classes\PremiumUser\FullScanHistoryForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="src\Classes\PremiumUser\CompareResultsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="src\Classes\PremiumUser\AnalyticsDashboardForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="src\Classes\PremiumUser\SavedConfigsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="src\Classes\PremiumUser\ScheduledScansForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="src\Classes\PremiumUser\PremiumUserForm.cs">
       <SubType>Form</SubType>
     </Compile>

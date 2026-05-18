@@ -42,5 +42,13 @@ namespace SwissArmyKnife
             RegularUserForm.ShowDialog();
             this.Show();
         }
+
+        private void PremiumUserButton_Click(object sender, EventArgs e)
+        {
+            PremiumUserForm PremiumUserForm = new PremiumUserForm();
+            this.Hide();
+            PremiumUserForm.ShowDialog();
+            this.Show();
+        }
     }
 }
