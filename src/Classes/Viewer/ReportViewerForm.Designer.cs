@@ -62,7 +62,6 @@
 
         #endregion
 
-
         private RichTextBox rtbContent;
         private Button btnClose;
     }
