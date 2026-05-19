@@ -64,4 +64,8 @@
     <Folder Include="src\Classes\Admin\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
+  </ItemGroup>
+
 </Project>

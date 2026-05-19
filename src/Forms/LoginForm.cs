@@ -5,6 +5,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
 
+using Database;
+
 namespace SwissArmyKnife
 {
     public partial class LoginForm : Form
@@ -17,25 +19,10 @@ namespace SwissArmyKnife
             InitializeComponent();
         }
 
-        /*
-         
-         
-         
-         */
-
-        private void LoginForm_Load(object sender, EventArgs e)
-        {
-            txtUsername.Text = "";
-            txtPassword.Text = "";
-            lblError.Visible = false;
-            txtUsername.Focus();
-        }
-
         private void ChkShowPassword_CheckedChanged(object sender, EventArgs e)
         {
             txtPassword.PasswordChar = chkShowPassword.Checked ? '\0' : '•';
         }
-
 
         private string HashPassword(string password)
         {
@@ -45,7 +32,7 @@ namespace SwissArmyKnife
                 return Convert.ToBase64String(hashedBytes);
             }
         }
-
+        /*
         private bool AuthenticateUser(string username, string password, out int userId, out string role, out bool isActive)
         {
             userId = 0;
@@ -81,8 +68,9 @@ namespace SwissArmyKnife
                 }
             }
             return false;
-        }
+        }*/
 
+        /*
         private void UpdateLastLogin(int userId)
         {
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -97,7 +85,9 @@ namespace SwissArmyKnife
                 }
             }
         }
+        */
 
+        /*
         private void LogAudit(int userId, string action, string targetType, string targetId, string details)
         {
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -119,19 +109,7 @@ namespace SwissArmyKnife
                 }
             }
         }
-
-        private void ChkShowPassword_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkShowPassword.Checked)
-            {
-                txtPassword.PasswordChar = '\0';
-            }
-            else
-            {
-                txtPassword.PasswordChar = '•';
-            }
-        }
-
+        */
         private void BtnLogin_Click(object sender, EventArgs e)
         {
             if (isLocked)
@@ -160,255 +138,38 @@ namespace SwissArmyKnife
             SetControlsEnabled(false);
             lblError.Visible = false;
 
-            bool isValid = AuthenticateUser(username, password, out int userId, out string role, out bool isActive);
+            var user = DatabaseQueries.AuthenticateUser(username, password);
 
-            if (isValid && isActive)
+            if (user != null && user.IsActive)
             {
                 loginAttempts = 0;
-                UpdateLastLogin(userId);
-                LogAudit(userId, "LOGIN_SUCCESS", "User", userId.ToString(), $"User {username} logged in successfully");
+                DatabaseQueries.UpdateLastLogin(user.UserId);
+                DatabaseQueries.LogAudit(user.UserId, "LOGIN_SUCCESS", "User", user.UserId.ToString(), $"User {username} logged in successfully");
 
-                OpenRoleBasedDashboard(role, username, userId);
+                OpenRoleBasedDashboard(user.Role, username, user.UserId);
                 this.Hide();
             }
-            else if (isValid && !isActive)
+            else if (user != null && !user.IsActive)
             {
                 loginAttempts++;
                 ShowError("Account is deactivated. Please contact administrator.");
-                LogAudit(userId, "LOGIN_FAILED_INACTIVE", "User", userId.ToString(), $"Inactive account attempted login: {username}");
+                DatabaseQueries.LogAudit(user.UserId, "LOGIN_FAILED_INACTIVE", "User", user.UserId.ToString(), $"Inactive account attempted login: {username}");
                 SetControlsEnabled(true);
                 txtPassword.Text = "";
                 txtPassword.Focus();
 
-                if (loginAttempts >= 5)
-                {
-                    isLocked = true;
-                    ShowError("Too many failed attempts. Account temporarily locked.");
-                }
+                if (loginAttempts >= 5) isLocked = true;
             }
             else
             {
                 loginAttempts++;
                 ShowError("Invalid username or password");
-                LogAudit(0, "LOGIN_FAILED", "User", username, $"Failed login attempt for {username}");
+                DatabaseQueries.LogAudit(0, "LOGIN_FAILED", "User", username, $"Failed login attempt for {username}");
                 SetControlsEnabled(true);
                 txtPassword.Text = "";
                 txtPassword.Focus();
 
-                if (loginAttempts >= 5)
-                {
-                    isLocked = true;
-                    ShowError("Too many failed attempts. Please try again later.");
-                }
-            }
-        }
-
-        private void OpenRoleBasedDashboard(string role, string username, int userId)
-        {
-            Form dashboard = null;
-
-            switch (role)
-            {
-                case "Admin":
-                    dashboard = new AdminForm(username, userId);
-                    break;
-                case "PremiumUser":
-                    dashboard = new PremiumUserForm(username, userId);
-                    break;
-                case "RegularUser":
-                    dashboard = new RegularUserForm(username, userId);
-                    break;
-                case "Viewer":
-                    dashboard = new ViewerForm(username, userId);
-                    break;
-                default:
-                    dashboard = new RegularUserForm(username, userId);
-                    break;
-            }
-
-            dashboard.FormClosed += (s, args) =>
-            {
-                this.Show();
-                this.txtUsername.Text = "";
-                this.txtPassword.Text = "";
-                this.lblError.Visible = false;
-                SetControlsEnabled(true);
-            };
-
-            dashboard.Show();
-        }
-
-        private void ShowError(string message)
-        {
-            lblError.Text = message;
-            lblError.Visible = true;
-        }
-
-        private void SetControlsEnabled(bool enabled)
-        {
-            txtUsername.Enabled = enabled;
-            txtPassword.Enabled = enabled;
-            btnLogin.Enabled = enabled;
-            btnClear.Enabled = enabled;
-            chkShowPassword.Enabled = enabled;
-            llRegister.Enabled = enabled;
-        }
-
-        private void BtnClear_Click(object sender, EventArgs e)
-        {
-            txtUsername.Text = "";
-            txtPassword.Text = "";
-            lblError.Visible = false;
-            txtUsername.Focus();
-        }
-
-        private void LlRegister_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            RegistrationForm registerForm = new RegistrationForm();
-            registerForm.ShowDialog();
-        }
-
-        private void BtnClose_Click(object sender, EventArgs e)
-        {
-            DialogResult result = MessageBox.Show("Are you sure you want to exit?",
-                "Exit", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
-            if (result == DialogResult.Yes)
-            {
-                Application.Exit();
-            }
-        }
-
-        private void LoginForm_Load(object sender, EventArgs e)
-        {
-            // Clear any saved credentials
-            txtUsername.Text = "";
-            txtPassword.Text = "";
-            lblError.Visible = false;
-
-            // Set focus to username field
-            txtUsername.Focus();
-        }
-
-        private void ChkShowPassword_CheckedChanged(object sender, EventArgs e)
-        {
-            if (chkShowPassword.Checked)
-            {
-                txtPassword.PasswordChar = '\0';
-            }
-            else
-            {
-                txtPassword.PasswordChar = '•';
-            }
-        }
-
-        private void BtnLogin_Click(object sender, EventArgs e)
-        {
-            string username = txtUsername.Text.Trim();
-            string password = txtPassword.Text;
-
-            // Validate input
-            if (string.IsNullOrEmpty(username))
-            {
-                ShowError("Please enter username");
-                txtUsername.Focus();
-                return;
-            }
-
-            if (string.IsNullOrEmpty(password))
-            {
-                ShowError("Please enter password");
-                txtPassword.Focus();
-                return;
-            }
-
-            // Disable controls during login
-            SetControlsEnabled(false);
-            lblError.Visible = false;
-
-            // TODO: Authenticate against database
-            // For now, using demo credentials
-            bool isValid = AuthenticateUser(username, password);
-
-            if (isValid)
-            {
-                // Get user role from database
-                string role = GetUserRole(username);
-                int userId = GetUserId(username);
-
-                // Redirect based on role
-                OpenRoleBasedDashboard(role, username, userId);
-
-                // Close login form
-                this.Hide();
-            }
-            else
-            {
-                ShowError("Invalid username or password");
-                SetControlsEnabled(true);
-                txtPassword.Text = "";
-                txtPassword.Focus();
-            }
-        }
-
-        private bool AuthenticateUser(string username, string password)
-        {
-            // TODO: Implement actual database authentication
-            // This is temporary demo authentication
-
-            // Demo credentials:
-            // admin / admin123
-            // premium / premium123
-            // regular / regular123
-            // viewer / viewer123
-
-            if (username == "admin" && password == "admin123")
-                return true;
-            if (username == "premium" && password == "premium123")
-                return true;
-            if (username == "regular" && password == "regular123")
-                return true;
-            if (username == "viewer" && password == "viewer123")
-                return true;
-
-            return false;
-        }
-
-        private string GetUserRole(string username)
-        {
-            // TODO: Get role from database
-            // Temporary role assignment based on username
-            switch (username.ToLower())
-            {
-                case "admin":
-                    return "Admin";
-                case "premium":
-                    return "PremiumUser";
-                case "regular":
-                    return "RegularUser";
-                case "viewer":
-                    return "Viewer";
-                default:
-                    return "RegularUser";
-            }
-        }
-
-        private int GetUserId(string username)
-        {
-            // TODO: Get user ID from database
-            // Temporary ID assignment
-            switch (username.ToLower())
-            {
-                case "admin":
-                    return 1;
-                case "premium":
-                    return 2;
-                case "regular":
-                    return 3;
-                case "viewer":
-                    return 4;
-                default:
-                    return 0;
+                if (loginAttempts >= 5) isLocked = true;
             }
         }
 
@@ -488,6 +249,78 @@ namespace SwissArmyKnife
             }
         }
 
+        private void LoginForm_Load(object sender, EventArgs e)
+        {
+            // Clear any saved credentials
+            txtUsername.Text = "";
+            txtPassword.Text = "";
+            lblError.Visible = false;
+
+            // Set focus to username field
+            txtUsername.Focus();
+        }
+
+        private bool AuthenticateUser(string username, string password)
+        {
+            // TODO: Implement actual database authentication
+            // This is temporary demo authentication
+
+            // Demo credentials:
+            // admin / admin123
+            // premium / premium123
+            // regular / regular123
+            // viewer / viewer123
+
+            if (username == "admin" && password == "admin123")
+                return true;
+            if (username == "premium" && password == "premium123")
+                return true;
+            if (username == "regular" && password == "regular123")
+                return true;
+            if (username == "viewer" && password == "viewer123")
+                return true;
+
+            return false;
+        }
+
+        private string GetUserRole(string username)
+        {
+            // TODO: Get role from database
+            // Temporary role assignment based on username
+            switch (username.ToLower())
+            {
+                case "admin":
+                    return "Admin";
+                case "premium":
+                    return "PremiumUser";
+                case "regular":
+                    return "RegularUser";
+                case "viewer":
+                    return "Viewer";
+                default:
+                    return "RegularUser";
+            }
+        }
+
+        private int GetUserId(string username)
+        {
+            // TODO: Get user ID from database
+            // Temporary ID assignment
+            switch (username.ToLower())
+            {
+                case "admin":
+                    return 1;
+                case "premium":
+                    return 2;
+                case "regular":
+                    return 3;
+                case "viewer":
+                    return 4;
+                default:
+                    return 0;
+            }
+        }
+
     }
 }
 
@@ -521,69 +354,7 @@ namespace SwissArmyKnife
 
         
 
-        private void BtnLogin_Click(object sender, EventArgs e)
-        {
-            if (isLocked)
-            {
-                ShowError("Account temporarily locked. Please try again later.");
-                return;
-            }
-
-            string username = txtUsername.Text.Trim();
-            string password = txtPassword.Text;
-
-            if (string.IsNullOrEmpty(username))
-            {
-                ShowError("Please enter username");
-                txtUsername.Focus();
-                return;
-            }
-
-            if (string.IsNullOrEmpty(password))
-            {
-                ShowError("Please enter password");
-                txtPassword.Focus();
-                return;
-            }
-
-            SetControlsEnabled(false);
-            lblError.Visible = false;
-
-            var user = DatabaseQueries.AuthenticateUser(username, password);
-
-            if (user != null && user.IsActive)
-            {
-                loginAttempts = 0;
-                DatabaseQueries.UpdateLastLogin(user.UserId);
-                DatabaseQueries.LogAudit(user.UserId, "LOGIN_SUCCESS", "User", user.UserId.ToString(), $"User {username} logged in successfully");
-                
-                OpenRoleBasedDashboard(user.Role, username, user.UserId);
-                this.Hide();
-            }
-            else if (user != null && !user.IsActive)
-            {
-                loginAttempts++;
-                ShowError("Account is deactivated. Please contact administrator.");
-                DatabaseQueries.LogAudit(user.UserId, "LOGIN_FAILED_INACTIVE", "User", user.UserId.ToString(), $"Inactive account attempted login: {username}");
-                SetControlsEnabled(true);
-                txtPassword.Text = "";
-                txtPassword.Focus();
-                
-                if (loginAttempts >= 5) isLocked = true;
-            }
-            else
-            {
-                loginAttempts++;
-                ShowError("Invalid username or password");
-                DatabaseQueries.LogAudit(0, "LOGIN_FAILED", "User", username, $"Failed login attempt for {username}");
-                SetControlsEnabled(true);
-                txtPassword.Text = "";
-                txtPassword.Focus();
-                
-                if (loginAttempts >= 5) isLocked = true;
-            }
-        }
-
+        
         private void OpenRoleBasedDashboard(string role, string username, int userId)
         {
             Form dashboard = null;
