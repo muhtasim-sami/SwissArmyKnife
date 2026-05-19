@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 
+using DatabaseQueries = Database.DatabaseQueries;
 
 namespace SwissArmyKnife
 {
@@ -37,10 +38,9 @@ namespace SwissArmyKnife
 
         private void LoadUserStats()
         {
-            // TODO: Load actual scan counts from database
-            // For now, using sample data
-            scansToday = 2;
-            totalScansThisMonth = 15;
+            scansToday = DatabaseQueries.GetUserScanCountToday(currentUserId);
+            int totalScans = DatabaseQueries.GetUserTotalScanCount(currentUserId);
+            int scansThisMonth = DatabaseQueries.GetUserScanCountThisMonth(currentUserId);
 
             int remainingScans = MAX_SCANS_PER_DAY - scansToday;
             remainingScans = remainingScans < 0 ? 0 : remainingScans;
@@ -48,54 +48,64 @@ namespace SwissArmyKnife
             lblScansToday.Text = $"Scans today: {scansToday} / {MAX_SCANS_PER_DAY}";
             lblRemaining.Text = $"Scans remaining today: {remainingScans}";
             lblTotalScans.Text = $"Total scans this month: {totalScansThisMonth}";
+
+            if (scansToday >= MAX_SCANS_PER_DAY)
+            {
+                lblScansToday.ForeColor = Color.FromArgb(210, 70, 70);
+                lblRemaining.ForeColor = Color.FromArgb(210, 70, 70);
+            }
+            else if (scansToday >= MAX_SCANS_PER_DAY - 2)
+            {
+                lblScansToday.ForeColor = Color.FromArgb(220, 170, 40);
+                lblRemaining.ForeColor = Color.FromArgb(220, 170, 40);
+            }
+            else
+            {
+                lblScansToday.ForeColor = Color.FromArgb(220, 220, 230);
+                lblRemaining.ForeColor = Color.FromArgb(220, 220, 230);
+            }
+
+
+        }
+
+        private bool CanPerformScan()
+        {
+            if (scansToday >= MAX_SCANS_PER_DAY)
+            {
+                MessageBox.Show($"You have reached your daily scan limit of {MAX_SCANS_PER_DAY}.\n\nUpgrade to Premium for unlimited scans.",
+                    "Daily Limit Reached", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return false;
+            }
+            return true;
         }
 
         private void BtnNetworkScanner_Click(object sender, EventArgs e)
         {
-            if (scansToday >= MAX_SCANS_PER_DAY)
-            {
-                MessageBox.Show($"You have reached your daily scan limit of {MAX_SCANS_PER_DAY}.\nUpgrade to Premium for unlimited scans.",
-                    "Daily Limit Reached", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
+            if (!CanPerformScan()) return;
 
             // Show limited Network Scanner for Regular User
             NetworkScannerForm scanner = new NetworkScannerForm();
-
-            // Apply regular user restrictions
-            // TODO: Pass user role to restrict features
-            // - Limit to 10 hosts
-            // - Only Top 100 ports
-            // - TXT export only
-
             scanner.ShowDialog();
 
-            // Increment scan count after scan completes
-            scansToday++;
+            // Log the scan and update stats
+            int scanId = DatabaseQueries.InsertScan(currentUserId, "Network", "Manual Scan", "Basic", null, "Completed");
+            DatabaseQueries.LogAudit(currentUserId, "SCAN_STARTED", "Network", scanId.ToString(), "Regular user started network scan");
+
             LoadUserStats();
         }
 
         private void BtnWebAuditor_Click(object sender, EventArgs e)
         {
-            if (scansToday >= MAX_SCANS_PER_DAY)
-            {
-                MessageBox.Show($"You have reached your daily scan limit of {MAX_SCANS_PER_DAY}.\nUpgrade to Premium for unlimited scans.",
-                    "Daily Limit Reached", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
+            if (!CanPerformScan()) return;
 
             // Show limited Web Security Auditor for Regular User
             WebSecurityAuditForm auditor = new WebSecurityAuditForm();
-
-            // Apply regular user restrictions
-            // TODO: Pass user role to restrict features
-            // - Basic header checks only
-            // - No advanced TLS inspection
-            // - No tech fingerprinting
-
             auditor.ShowDialog();
 
-            scansToday++;
+            // Log the scan and update stats
+            int scanId = DatabaseQueries.InsertScan(currentUserId, "Web", "Web Audit", "Basic", null, "Completed");
+            DatabaseQueries.LogAudit(currentUserId, "SCAN_STARTED", "Web", scanId.ToString(), "Regular user started web audit");
+
             LoadUserStats();
         }
 
@@ -124,7 +134,8 @@ namespace SwissArmyKnife
 
             if (result == DialogResult.Yes)
             {
-                // TODO: Open payment/upgrade page
+                DatabaseQueries.LogAudit(currentUserId, "UPGRADE_INTEREST", "Subscription", null, "Regular user showed interest in Premium upgrade");
+
                 MessageBox.Show("Upgrade feature coming soon.\nContact administrator for premium access.",
                     "Upgrade", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -137,8 +148,10 @@ namespace SwissArmyKnife
 
             if (result == DialogResult.Yes)
             {
-                LoginForm frmLogin = new LoginForm();
-                frmLogin.Show();
+                DatabaseQueries.LogAudit(currentUserId, "LOGOUT", "User", currentUserId.ToString(), $"User {currentUsername} logged out");
+
+                //LoginForm frmLogin = new LoginForm();
+                //frmLogin.Show();
                 this.Close();
             }
         }
@@ -150,89 +163,10 @@ namespace SwissArmyKnife
 
             if (result == DialogResult.Yes)
             {
+                DatabaseQueries.LogAudit(currentUserId, "APPLICATION_EXIT", "User", currentUserId.ToString(), $"User {currentUsername} exited application");
+
                 Application.Exit();
             }
         }
     }
-
-    // Simple Scan History Form for Regular Users
-    public partial class ScanHistoryForm : Form
-    {
-        private ListView lvHistory;
-        private Button btnClose;
-        private int userId;
-        private int daysLimit;
-
-        public ScanHistoryForm(int userId, int daysLimit)
-        {
-            this.userId = userId;
-            this.daysLimit = daysLimit;
-            InitializeComponent();
-            LoadHistory();
-        }
-
-        private void InitializeComponent()
-        {
-            this.Text = $"Scan History (Last {daysLimit} Days)";
-            this.Size = new Size(800, 500);
-            this.StartPosition = FormStartPosition.CenterParent;
-            this.BackColor = Color.FromArgb(30, 30, 38);
-
-            lvHistory = new ListView();
-            lvHistory.Dock = DockStyle.Top;
-            lvHistory.Height = 380;
-            lvHistory.View = View.Details;
-            lvHistory.FullRowSelect = true;
-            lvHistory.BackColor = Color.FromArgb(35, 35, 43);
-            lvHistory.ForeColor = Color.FromArgb(220, 220, 230);
-            lvHistory.Columns.Add("Scan Type", 150);
-            lvHistory.Columns.Add("Target", 200);
-            lvHistory.Columns.Add("Date", 150);
-            lvHistory.Columns.Add("Duration", 100);
-            lvHistory.Columns.Add("Status", 100);
-
-            btnClose = new Button();
-            btnClose.Text = "Close";
-            btnClose.BackColor = Color.FromArgb(60, 60, 70);
-            btnClose.ForeColor = Color.White;
-            btnClose.FlatStyle = FlatStyle.Flat;
-            btnClose.Size = new Size(100, 35);
-            btnClose.Location = new Point(350, 410);
-            btnClose.Click += (s, e) => Close();
-
-            Controls.Add(btnClose);
-            Controls.Add(lvHistory);
-        }
-
-        private void LoadHistory()
-        {
-            lvHistory.Items.Clear();
-
-            // TODO: Load actual scan history from database for this user
-            // For now, adding sample data
-
-            ListViewItem item1 = new ListViewItem("Network Scan");
-            item1.SubItems.Add("192.168.1.0/24");
-            item1.SubItems.Add(DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd HH:mm"));
-            item1.SubItems.Add("45 seconds");
-            item1.SubItems.Add("Completed");
-            lvHistory.Items.Add(item1);
-
-            ListViewItem item2 = new ListViewItem("Web Audit");
-            item2.SubItems.Add("https://example.com");
-            item2.SubItems.Add(DateTime.Now.AddDays(-3).ToString("yyyy-MM-dd HH:mm"));
-            item2.SubItems.Add("12 seconds");
-            item2.SubItems.Add("Completed");
-            lvHistory.Items.Add(item2);
-
-            ListViewItem item3 = new ListViewItem("Network Scan");
-            item3.SubItems.Add("10.0.0.1");
-            item3.SubItems.Add(DateTime.Now.AddDays(-5).ToString("yyyy-MM-dd HH:mm"));
-            item3.SubItems.Add("8 seconds");
-            item3.SubItems.Add("Completed");
-            lvHistory.Items.Add(item3);
-        }
-
-    }
-}
-
+}    

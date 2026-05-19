@@ -27,6 +27,9 @@
     <Compile Update="src\Classes\PremiumUser\PremiumUserForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="src\Classes\RegularUser\ScanHistoryForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="src\Classes\RegularUser\RegularUserForm.cs">
       <SubType>Form</SubType>
     </Compile>

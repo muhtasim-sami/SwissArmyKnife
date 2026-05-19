@@ -270,23 +270,6 @@ namespace SwissArmyKnife
             }
         }
 
-        
-
-        private bool RegisterUser(string username, string email, string password)
-        {
-            // TODO: Insert user into database with RegularUser role
-            // Password should be hashed before storing
-
-            // For demo, simulate successful registration
-            // In production, you would:
-            // 1. Hash the password using BCrypt or similar
-            // 2. Insert into Users table with RoleId = 1 (RegularUser)
-            // 3. Set CreatedAt = DateTime.Now
-            // 4. Set IsActive = true
-
-            return true;
-        }
-
         private void BtnClear_Click(object sender, EventArgs e)
         {
             txtUsername.Text = "";

@@ -961,5 +961,86 @@ namespace Database
         }
 
         #endregion
+
+        public static int GetUserScanCountThisMonth(int userId)
+        {
+            using (SqlConnection conn = GetConnection())
+            {
+                string query = @"
+            SELECT COUNT(1) FROM dbo.Scans 
+            WHERE UserId = @UserId 
+            AND StartTime >= DATEFROMPARTS(YEAR(GETUTCDATE()), MONTH(GETUTCDATE()), 1)";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@UserId", userId);
+                    conn.Open();
+                    return (int)cmd.ExecuteScalar();
+                }
+            }
+        }
+
+        public static int GetUserScanCountByDateRange(int userId, DateTime startDate, DateTime endDate)
+        {
+            using (SqlConnection conn = GetConnection())
+            {
+                string query = @"
+            SELECT COUNT(1) FROM dbo.Scans 
+            WHERE UserId = @UserId 
+            AND StartTime BETWEEN @StartDate AND @EndDate";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@UserId", userId);
+                    cmd.Parameters.AddWithValue("@StartDate", startDate);
+                    cmd.Parameters.AddWithValue("@EndDate", endDate);
+                    conn.Open();
+                    return (int)cmd.ExecuteScalar();
+                }
+            }
+        }
+
+        public static List<ScanInfo> GetUserScansByType(int userId, string scanType, int limit = 50)
+        {
+            List<ScanInfo> scans = new List<ScanInfo>();
+            using (SqlConnection conn = GetConnection())
+            {
+                string query = @"
+            SELECT TOP (@Limit) ScanId, UserId, NULL as Username, Type, Target, Mode, Options, 
+                   StartTime, EndTime, Status, ResultReference, CreatedAt
+            FROM dbo.Scans
+            WHERE UserId = @UserId AND Type = @ScanType
+            ORDER BY StartTime DESC";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Limit", limit);
+                    cmd.Parameters.AddWithValue("@UserId", userId);
+                    cmd.Parameters.AddWithValue("@ScanType", scanType);
+                    conn.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            scans.Add(new ScanInfo
+                            {
+                                ScanId = reader.GetInt32(0),
+                                UserId = reader.IsDBNull(1) ? (int?)null : reader.GetInt32(1),
+                                Type = reader.GetString(3),
+                                Target = reader.GetString(4),
+                                Mode = reader.IsDBNull(5) ? null : reader.GetString(5),
+                                Options = reader.IsDBNull(6) ? null : reader.GetString(6),
+                                StartTime = reader.IsDBNull(7) ? (DateTime?)null : reader.GetDateTime(7),
+                                EndTime = reader.IsDBNull(8) ? (DateTime?)null : reader.GetDateTime(8),
+                                Status = reader.GetString(9),
+                                ResultReference = reader.IsDBNull(10) ? null : reader.GetString(10),
+                                CreatedAt = reader.GetDateTime(11)
+                            });
+                        }
+                    }
+                }
+            }
+            return scans;
+        }
     }
 }
