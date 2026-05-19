@@ -1,0 +1,12 @@
+SELECT * FROM ROLES;
+-- Insert user with password "12345Aa@"
+
+-- In SQL Server
+SELECT CONVERT(NVARCHAR(256), HASHBYTES('SHA2_256', '12345Aa@'), 1);
+
+INSERT INTO dbo.Users (Username, PasswordHash, Email, RoleId, IsActive, CreatedAt) 
+VALUES ('admin', '0x3F0409AD2AC4570392ADEF46536C00E46C60D702D3822788319590DE4C146A45', 'admin@gmail.com', 1, 1, GETUTCDATE());
+
+SELECT * FROM USERS;
+
+UPDATE USERS;

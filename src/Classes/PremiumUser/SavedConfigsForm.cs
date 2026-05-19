@@ -43,7 +43,7 @@ namespace SwissArmyKnife
 
         private void BtnLoad_Click(object sender, EventArgs e)
         {
-            if (lvConfigs.SelectedItems.Count == 0)
+            if (lvConfigs.SelectedItems.Count == 0 || lvConfigs.SelectedItems[0].Tag == null)
             {
                 MessageBox.Show("Please select a configuration to load.", "No Selection",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);

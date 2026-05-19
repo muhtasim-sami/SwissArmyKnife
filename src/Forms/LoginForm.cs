@@ -180,7 +180,7 @@ namespace SwissArmyKnife
             switch (role)
             {
                 case "Admin":
-                    //dashboard = new AdminForm(username, userId);
+                    dashboard = new AdminForm(username, userId);
                     break;
                 case "PremiumUser":
                     dashboard = new PremiumUserForm(username, userId);
@@ -204,7 +204,7 @@ namespace SwissArmyKnife
                 this.lblError.Visible = false;
                 SetControlsEnabled(true);
             };
-
+                
             dashboard.Show();
         }
 
