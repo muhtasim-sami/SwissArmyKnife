@@ -1,3 +1,5 @@
+using Database;
+
 namespace SwissArmyKnife
 {
     public partial class ScheduledScansForm : Form
@@ -14,28 +16,56 @@ namespace SwissArmyKnife
         private void LoadSchedules()
         {
             lvSchedules.Items.Clear();
+            var schedules = DatabaseQueries.GetUserScheduledScans(userId);
 
-            // TODO: Load scheduled scans from database
-            // Sample data
-            ListViewItem item1 = new ListViewItem("Weekly Network Scan");
-            item1.SubItems.Add("Network Scanner");
-            item1.SubItems.Add("192.168.1.0/24");
-            item1.SubItems.Add("Weekly (Sundays)");
-            item1.SubItems.Add("2024-01-21 02:00");
-            lvSchedules.Items.Add(item1);
+            foreach (var schedule in schedules)
+            {
+                ListViewItem item = new ListViewItem(schedule.Name);
+                item.SubItems.Add("Network Scanner");
+                item.SubItems.Add("Scheduled Target");
+                item.SubItems.Add(schedule.CronExpression ?? "Daily");
+                item.SubItems.Add(schedule.NextRun?.ToString("yyyy-MM-dd HH:mm") ?? "Not scheduled");
+                item.SubItems.Add(schedule.Enabled ? "Active" : "Disabled");
+
+                if (!schedule.Enabled)
+                    item.ForeColor = Color.FromArgb(130, 130, 145);
+
+                item.Tag = schedule.ScheduleId;
+                lvSchedules.Items.Add(item);
+            }
+
+            if (schedules.Count == 0)
+            {
+                ListViewItem emptyItem = new ListViewItem("No scheduled scans");
+                emptyItem.SubItems.Add("");
+                emptyItem.SubItems.Add("");
+                emptyItem.SubItems.Add("");
+                emptyItem.SubItems.Add("");
+                emptyItem.SubItems.Add("");
+                lvSchedules.Items.Add(emptyItem);
+            }
         }
 
         private void BtnAdd_Click(object sender, EventArgs e)
         {
             // TODO: Open add schedule dialog
-            MessageBox.Show("Schedule creation feature coming soon.", "Add Schedule",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Schedule creation feature:\n\n" +
+                "• Daily scans at specific time\n" +
+                "• Weekly scans on selected days\n" +
+                "• Monthly scans on specific date\n" +
+                "• Custom cron expressions\n\n" +
+                "Coming soon in next update.",
+                "Add Schedule", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void BtnEdit_Click(object sender, EventArgs e)
         {
-            if (lvSchedules.SelectedItems.Count == 0) return;
-            // TODO: Open edit schedule dialog
+            if (lvSchedules.SelectedItems.Count == 0)
+            {
+                MessageBox.Show("Please select a schedule to edit.", "No Selection",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
             MessageBox.Show("Edit schedule feature coming soon.", "Edit Schedule",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
@@ -49,9 +79,19 @@ namespace SwissArmyKnife
 
             if (result == DialogResult.Yes)
             {
-                // TODO: Delete from database
-                lvSchedules.SelectedItems[0].Remove();
+                int scheduleId = (int)lvSchedules.SelectedItems[0].Tag;
+                DatabaseQueries.DeleteScheduledScan(scheduleId, userId);
+                DatabaseQueries.LogAudit(userId, "DELETE_SCHEDULE", "ScheduledScan", scheduleId.ToString(), "Premium user deleted scheduled scan");
+                LoadSchedules();
             }
+        }
+
+        private void BtnToggle_Click(object sender, EventArgs e)
+        {
+            if (lvSchedules.SelectedItems.Count == 0) return;
+
+            MessageBox.Show("Toggle schedule status feature coming soon.", "Toggle Status",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }

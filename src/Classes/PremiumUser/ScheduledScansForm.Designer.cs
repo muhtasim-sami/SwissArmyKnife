@@ -81,6 +81,15 @@
             btnClose.Location = new Point(670, 420);
             btnClose.Click += (s, e) => Close();
 
+            btnToggle = new Button();
+            btnToggle.Text = "Enable/Disable";
+            btnToggle.BackColor = Color.FromArgb(60, 60, 70);
+            btnToggle.ForeColor = Color.White;
+            btnToggle.FlatStyle = FlatStyle.Flat;
+            btnToggle.Size = new Size(120, 35);
+            btnToggle.Location = new Point(410, 450);
+            btnToggle.Click += BtnToggle_Click;
+
             Controls.Add(btnClose);
             Controls.Add(btnDelete);
             Controls.Add(btnEdit);
@@ -96,5 +105,6 @@
         private Button btnEdit;
         private Button btnDelete;
         private Button btnClose;
+        private Button btnToggle;
     }
 }

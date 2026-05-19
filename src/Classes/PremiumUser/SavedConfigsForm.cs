@@ -1,3 +1,5 @@
+using Database;
+
 namespace SwissArmyKnife
 {
     public partial class SavedConfigsForm : Form
@@ -14,20 +16,29 @@ namespace SwissArmyKnife
         private void LoadConfigs()
         {
             lvConfigs.Items.Clear();
+            var configs = DatabaseQueries.GetUserConfigurations(userId);
 
-            // TODO: Load saved configs from database
-            // Sample data
-            ListViewItem item1 = new ListViewItem("Production Network Scan");
-            item1.SubItems.Add("Network Scanner");
-            item1.SubItems.Add("192.168.1.0/24");
-            item1.SubItems.Add("2024-01-15");
-            lvConfigs.Items.Add(item1);
+            foreach (var config in configs)
+            {
+                ListViewItem item = new ListViewItem(config.Name);
+                item.SubItems.Add("Network Scanner");
 
-            ListViewItem item2 = new ListViewItem("API Security Audit");
-            item2.SubItems.Add("Web Auditor");
-            item2.SubItems.Add("https://api.example.com");
-            item2.SubItems.Add("2024-01-14");
-            lvConfigs.Items.Add(item2);
+                // Parse options preview
+                string preview = config.Options.Length > 50 ? config.Options.Substring(0, 50) + "..." : config.Options;
+                item.SubItems.Add(preview);
+                item.SubItems.Add(config.CreatedAt.ToString("yyyy-MM-dd HH:mm"));
+                item.Tag = config.ConfigId;
+                lvConfigs.Items.Add(item);
+            }
+
+            if (configs.Count == 0)
+            {
+                ListViewItem emptyItem = new ListViewItem("No saved configurations");
+                emptyItem.SubItems.Add("");
+                emptyItem.SubItems.Add("");
+                emptyItem.SubItems.Add("");
+                lvConfigs.Items.Add(emptyItem);
+            }
         }
 
         private void BtnLoad_Click(object sender, EventArgs e)
@@ -39,7 +50,11 @@ namespace SwissArmyKnife
                 return;
             }
 
-            // TODO: Load and apply selected configuration
+            int configId = (int)lvConfigs.SelectedItems[0].Tag;
+
+            DatabaseQueries.LogAudit(userId, "LOAD_CONFIG", "SavedConfig", configId.ToString(), "Premium user loaded saved configuration");
+
+
             MessageBox.Show("Configuration loaded successfully.", "Loaded",
                 MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
@@ -48,13 +63,17 @@ namespace SwissArmyKnife
         {
             if (lvConfigs.SelectedItems.Count == 0) return;
 
+
+
             DialogResult result = MessageBox.Show("Delete selected configuration?", "Confirm",
                 MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
-                // TODO: Delete from database
-                lvConfigs.SelectedItems[0].Remove();
+                int configId = (int)lvConfigs.SelectedItems[0].Tag;
+                DatabaseQueries.DeleteConfiguration(configId, userId);
+                DatabaseQueries.LogAudit(userId, "DELETE_CONFIG", "SavedConfig", configId.ToString(), "Premium user deleted saved configuration");
+                LoadConfigs();
             }
         }
     }

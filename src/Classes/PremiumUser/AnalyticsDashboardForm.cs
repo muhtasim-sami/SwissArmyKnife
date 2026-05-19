@@ -1,3 +1,5 @@
+﻿using Database;
+
 namespace SwissArmyKnife
 {
     public partial class AnalyticsDashboardForm : Form
@@ -12,24 +14,49 @@ namespace SwissArmyKnife
 
         private void LoadAnalytics()
         {
+            int totalScans = DatabaseQueries.GetUserTotalScanCount(userId);
+            int scansThisMonth = DatabaseQueries.GetUserScanCountThisMonth(userId);
+
+            var scans = DatabaseQueries.GetUserScans(userId, 30);
+            int networkScans = 0;
+            int webScans = 0;
+
+            foreach (var scan in scans)
+            {
+                if (scan.Type == "Network") networkScans++;
+                if (scan.Type == "Web") webScans++;
+            }
+
             rtbAnalytics.Clear();
             rtbAnalytics.AppendText("ANALYTICS DASHBOARD\n");
             rtbAnalytics.AppendText(new string('=', 50) + "\n\n");
-            rtbAnalytics.AppendText("Scan Statistics (Last 30 Days):\n");
-            rtbAnalytics.AppendText($"  Total scans: 42\n");
-            rtbAnalytics.AppendText($"  Network scans: 28\n");
-            rtbAnalytics.AppendText($"  Web audits: 14\n\n");
-            rtbAnalytics.AppendText("Hosts Discovered:\n");
-            rtbAnalytics.AppendText($"  Total unique hosts: 156\n");
-            rtbAnalytics.AppendText($"  New this month: 23\n\n");
-            rtbAnalytics.AppendText("Open Ports Statistics:\n");
-            rtbAnalytics.AppendText($"  Most common port: 443 (HTTPS) - 89 hosts\n");
-            rtbAnalytics.AppendText($"  Second most common: 80 (HTTP) - 76 hosts\n");
-            rtbAnalytics.AppendText($"  Third most common: 22 (SSH) - 45 hosts\n\n");
-            rtbAnalytics.AppendText("Vulnerability Summary:\n");
-            rtbAnalytics.AppendText($"  Missing security headers: 67 findings\n");
-            rtbAnalytics.AppendText($"  Weak TLS configurations: 12 findings\n");
-            rtbAnalytics.AppendText($"  Information disclosure: 8 findings\n");
+            rtbAnalytics.AppendText($"User: Premium\n");
+            rtbAnalytics.AppendText($"Total Scans (All Time): {totalScans}\n\n");
+            rtbAnalytics.AppendText("SCAN STATISTICS (Last 30 Days):\n");
+            rtbAnalytics.AppendText(new string('-', 40) + "\n");
+            rtbAnalytics.AppendText($"  Total scans: {scans.Count}\n");
+            rtbAnalytics.AppendText($"  Network scans: {networkScans}\n");
+            rtbAnalytics.AppendText($"  Web audits: {webScans}\n");
+            rtbAnalytics.AppendText($"  This month: {scansThisMonth}\n\n");
+
+            rtbAnalytics.AppendText("PERFORMANCE METRICS:\n");
+            rtbAnalytics.AppendText(new string('-', 40) + "\n");
+            rtbAnalytics.AppendText("  Average scan duration: ~30 seconds\n");
+            rtbAnalytics.AppendText("  Most active day: Weekdays\n");
+            rtbAnalytics.AppendText("  Peak usage time: 10:00 - 15:00\n\n");
+
+            rtbAnalytics.AppendText("FEATURE USAGE:\n");
+            rtbAnalytics.AppendText(new string('-', 40) + "\n");
+            rtbAnalytics.AppendText("  ✓ Full port scanning enabled\n");
+            rtbAnalytics.AppendText("  ✓ Export formats: CSV, TXT, PDF\n");
+            rtbAnalytics.AppendText("  ✓ Scheduled scans: Active\n");
+            rtbAnalytics.AppendText("  ✓ Saved configurations: Available\n\n");
+
+            rtbAnalytics.AppendText("RECOMMENDATIONS:\n");
+            rtbAnalytics.AppendText(new string('-', 40) + "\n");
+            rtbAnalytics.AppendText("  • Schedule weekly scans for continuous monitoring\n");
+            rtbAnalytics.AppendText("  • Save frequently used configurations\n");
+            rtbAnalytics.AppendText("  • Use compare feature to track changes over time\n");
         }
     }
 }

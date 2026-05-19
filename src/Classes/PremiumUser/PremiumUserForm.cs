@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 
+using DatabaseQueries = Database.DatabaseQueries;
 
 namespace SwissArmyKnife
 {
@@ -31,44 +32,55 @@ namespace SwissArmyKnife
 
         private void LoadUserStats()
         {
-            // TODO: Load actual scan statistics from database
-            // For now, using sample data
 
-            int totalScans = 247;
-            int thisMonthScans = 42;
-            int lastMonthScans = 38;
+            int totalScans = DatabaseQueries.GetUserTotalScanCount(currentUserId);
+            int scansThisMonth = DatabaseQueries.GetUserScanCountThisMonth(currentUserId);
+
+            // Get last month's scans
+            DateTime firstDayLastMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(-1);
+            DateTime lastDayLastMonth = firstDayLastMonth.AddMonths(1).AddDays(-1);
+            int scansLastMonth = DatabaseQueries.GetUserScanCountByDateRange(currentUserId, firstDayLastMonth, lastDayLastMonth);
 
             lblTotalScans.Text = $"Total scans: {totalScans}";
-            lblThisMonth.Text = $"This month: {thisMonthScans} scans";
-            lblLastMonth.Text = $"Last month: {lastMonthScans} scans";
+            lblThisMonth.Text = $"This month: {scansThisMonth} scans";
+            lblLastMonth.Text = $"Last month: {scansLastMonth} scans";
+
+            // Calculate trend
+            if (scansLastMonth > 0)
+            {
+                int trend = scansThisMonth - scansLastMonth;
+                if (trend > 0)
+                    lblThisMonth.Text += $" (↑ +{trend})";
+                else if (trend < 0)
+                    lblThisMonth.Text += $" (↓ {trend})";
+            }
+
         }
 
         private void BtnNetworkScanner_Click(object sender, EventArgs e)
         {
-            // Full Network Scanner with all features for Premium User
             NetworkScannerForm scanner = new NetworkScannerForm();
 
-            // Premium features available:
-            // - Unlimited hosts
-            // - All port options (Top100, Top1000, Full 1-65535, Custom)
-            // - CSV, TXT export
-            // - Save configurations
-
             scanner.ShowDialog();
+
+            // Log the scan
+            int scanId = DatabaseQueries.InsertScan(currentUserId, "Network", "Manual Scan", "Full", null, "Completed");
+            DatabaseQueries.LogAudit(currentUserId, "SCAN_STARTED", "Network", scanId.ToString(), "Premium user started full network scan");
+
+            LoadUserStats();
         }
 
         private void BtnWebAuditor_Click(object sender, EventArgs e)
         {
-            // Full Web Security Auditor for Premium User
             WebSecurityAuditForm auditor = new WebSecurityAuditForm();
 
-            // Premium features available:
-            // - All tabs (Headers, TLS, Response, Tech Fingerprinter)
-            // - Full TLS inspection
-            // - Technology fingerprinting
-            // - Export capabilities
-
             auditor.ShowDialog();
+
+            // Log the scan
+            int scanId = DatabaseQueries.InsertScan(currentUserId, "Web", "Web Audit", "Full", null, "Completed");
+            DatabaseQueries.LogAudit(currentUserId, "SCAN_STARTED", "Web", scanId.ToString(), "Premium user started full web audit");
+
+            LoadUserStats();
         }
 
         private void BtnSavedConfigs_Click(object sender, EventArgs e)
@@ -127,9 +139,3 @@ namespace SwissArmyKnife
         }
     }
 }
-/*
- 
-    
-    
- 
- */
