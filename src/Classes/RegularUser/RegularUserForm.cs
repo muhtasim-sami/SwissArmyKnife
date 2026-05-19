@@ -127,20 +127,82 @@ namespace SwissArmyKnife
                 "✓ Save scan configurations\n" +
                 "✓ Schedule recurring scans\n" +
                 "✓ Compare scan results\n\n" +
-                "Would you like to proceed?",
+                "Select an option:",
                 "Upgrade to Premium",
-                MessageBoxButtons.YesNo,
+                MessageBoxButtons.YesNoCancel,
                 MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
-                DatabaseQueries.LogAudit(currentUserId, "UPGRADE_INTEREST", "Subscription", null, "Regular user showed interest in Premium upgrade");
+                // Instant upgrade option (for demo/special cases)
+                DialogResult confirm = MessageBox.Show(
+                    "Confirm instant upgrade?\n\n" +
+                    "This will immediately upgrade your account to Premium.\n" +
+                    "(In production, this would process payment first)",
+                    "Confirm Upgrade",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
 
-                MessageBox.Show("Upgrade feature coming soon.\nContact administrator for premium access.",
-                    "Upgrade", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                if (confirm == DialogResult.Yes)
+                {
+                    bool upgraded = DatabaseQueries.UpgradeUserToPremium(currentUserId);
+
+                    if (upgraded)
+                    {
+                        DatabaseQueries.LogAudit(currentUserId, "UPGRADE_COMPLETED", "Subscription", null, "User upgraded from Regular to Premium");
+
+                        MessageBox.Show(
+                            "Congratulations! You have been upgraded to Premium User!\n\n" +
+                            "Please log in again to access all premium features.",
+                            "Upgrade Successful",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Information);
+
+                        // Logout and return to login screen
+                        DatabaseQueries.LogAudit(currentUserId, "LOGOUT", "User", currentUserId.ToString(), "Logout after premium upgrade");
+                        LoginForm login = new LoginForm();
+                        login.Show();
+                        this.Close();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Upgrade failed. Please contact support.",
+                            "Upgrade Failed",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
+                    }
+                }
+            }
+            else if (result == DialogResult.Cancel)
+            {
+                // Request upgrade (admin approval required)
+                string paymentMethod = "Demo";
+                string transactionId = $"REQ_{DateTime.Now:yyyyMMddHHmmss}_{currentUserId}";
+
+                bool requested = DatabaseQueries.RequestPremiumUpgrade(currentUserId, paymentMethod, transactionId);
+
+                if (requested)
+                {
+                    DatabaseQueries.LogAudit(currentUserId, "UPGRADE_REQUESTED", "Subscription", transactionId, "Regular user requested premium upgrade");
+
+                    MessageBox.Show(
+                        "Your upgrade request has been submitted!\n\n" +
+                        "An administrator will review your request and approve it.\n" +
+                        "You will be notified once upgraded.\n\n" +
+                        "Request ID: " + transactionId,
+                        "Upgrade Request Submitted",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Failed to submit upgrade request. Please try again.",
+                        "Request Failed",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
             }
         }
-
         private void BtnLogout_Click(object sender, EventArgs e)
         {
             DialogResult result = MessageBox.Show("Are you sure you want to logout?",

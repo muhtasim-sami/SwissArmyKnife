@@ -962,6 +962,7 @@ namespace Database
 
         #endregion
 
+        #region Premium User Functions
         public static int GetUserScanCountThisMonth(int userId)
         {
             using (SqlConnection conn = GetConnection())
@@ -1042,5 +1043,175 @@ namespace Database
             }
             return scans;
         }
+
+        #endregion
+
+        #region Role Management
+        public static bool UpgradeUserToPremium(int userId)
+        {
+            using (SqlConnection conn = GetConnection())
+            {
+                // Get PremiumUser RoleId
+                int premiumRoleId = GetRoleId("PremiumUser");
+
+                string query = "UPDATE dbo.Users SET RoleId = @RoleId WHERE UserId = @UserId";
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@RoleId", premiumRoleId);
+                    cmd.Parameters.AddWithValue("@UserId", userId);
+                    conn.Open();
+                    int rowsAffected = cmd.ExecuteNonQuery();
+                    return rowsAffected > 0;
+                }
+            }
+        }
+
+        public static bool IsUserPremium(int userId)
+        {
+            using (SqlConnection conn = GetConnection())
+            {
+                string query = @"
+            SELECT COUNT(1) FROM dbo.Users u
+            INNER JOIN dbo.Roles r ON u.RoleId = r.RoleId
+            WHERE u.UserId = @UserId AND r.Name = 'PremiumUser'";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@UserId", userId);
+                    conn.Open();
+                    return (int)cmd.ExecuteScalar() > 0;
+                }
+            }
+        }
+
+        public static bool RequestPremiumUpgrade(int userId, string paymentMethod = null, string transactionId = null)
+        {
+            using (SqlConnection conn = GetConnection())
+            {
+                // First check if audit log table has UpgradeRequests, or use existing AuditLog
+                string query = @"
+            INSERT INTO dbo.AuditLog (UserId, Action, TargetType, Details, CreatedAt)
+            VALUES (@UserId, @Action, @TargetType, @Details, @CreatedAt)";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    string details = $"Premium upgrade requested. Payment Method: {paymentMethod ?? "None"}, Transaction ID: {transactionId ?? "Pending"}";
+
+                    cmd.Parameters.AddWithValue("@UserId", userId);
+                    cmd.Parameters.AddWithValue("@Action", "UPGRADE_REQUEST");
+                    cmd.Parameters.AddWithValue("@TargetType", "Subscription");
+                    cmd.Parameters.AddWithValue("@Details", details);
+                    cmd.Parameters.AddWithValue("@CreatedAt", DateTime.UtcNow);
+                    conn.Open();
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+        }
+
+        public static bool ApprovePremiumUpgrade(int userId, int approvedByAdminId)
+        {
+            using (SqlConnection conn = GetConnection())
+            {
+                // Start transaction
+                conn.Open();
+                using (SqlTransaction transaction = conn.BeginTransaction())
+                {
+                    try
+                    {
+                        // Update user role to Premium
+                        int premiumRoleId = GetRoleId("PremiumUser");
+                        string updateQuery = "UPDATE dbo.Users SET RoleId = @RoleId WHERE UserId = @UserId";
+                        using (SqlCommand cmd = new SqlCommand(updateQuery, conn, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@RoleId", premiumRoleId);
+                            cmd.Parameters.AddWithValue("@UserId", userId);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        // Log the approval
+                        string logQuery = @"
+                    INSERT INTO dbo.AuditLog (UserId, Action, TargetType, TargetId, Details, CreatedAt)
+                    VALUES (@UserId, @Action, @TargetType, @TargetId, @Details, @CreatedAt)";
+
+                        using (SqlCommand cmd = new SqlCommand(logQuery, conn, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@UserId", approvedByAdminId);
+                            cmd.Parameters.AddWithValue("@Action", "UPGRADE_APPROVED");
+                            cmd.Parameters.AddWithValue("@TargetType", "User");
+                            cmd.Parameters.AddWithValue("@TargetId", userId.ToString());
+                            cmd.Parameters.AddWithValue("@Details", $"User {userId} upgraded to Premium by Admin {approvedByAdminId}");
+                            cmd.Parameters.AddWithValue("@CreatedAt", DateTime.UtcNow);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        transaction.Commit();
+                        return true;
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
+
+        #endregion
+
+        #region Upgarde Request
+
+        public class UpgradeRequest
+        {
+            public int UserId { get; set; }
+            public string Username { get; set; }
+            public string Email { get; set; }
+            public DateTime RequestDate { get; set; }
+            public string PaymentMethod { get; set; }
+            public string TransactionId { get; set; }
+        }
+
+        public static List<UpgradeRequest> GetUpgradeRequests()
+        {
+            List<UpgradeRequest> requests = new List<UpgradeRequest>();
+
+            using (SqlConnection conn = GetConnection())
+            {
+                string query = @"
+            SELECT a.UserId, u.Username, u.Email, a.CreatedAt, a.Details
+            FROM dbo.AuditLog a
+            INNER JOIN dbo.Users u ON a.UserId = u.UserId
+            WHERE a.Action = 'UPGRADE_REQUEST'
+            AND a.UserId NOT IN (
+                SELECT UserId FROM dbo.AuditLog WHERE Action = 'UPGRADE_APPROVED'
+            )
+            ORDER BY a.CreatedAt DESC";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    conn.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            UpgradeRequest request = new UpgradeRequest();
+                            request.UserId = reader.GetInt32(0);
+                            request.Username = reader.GetString(1);
+                            request.Email = reader.IsDBNull(2) ? null : reader.GetString(2);
+                            request.RequestDate = reader.GetDateTime(3);
+
+                            string details = reader.GetString(4);
+                            // Parse payment method and transaction ID from details
+                            request.PaymentMethod = "Demo";
+                            request.TransactionId = $"REQ_{request.RequestDate:yyyyMMddHHmmss}_{request.UserId}";
+
+                            requests.Add(request);
+                        }
+                    }
+                }
+            }
+            return requests;
+        }
+
+        #endregion
     }
 }
