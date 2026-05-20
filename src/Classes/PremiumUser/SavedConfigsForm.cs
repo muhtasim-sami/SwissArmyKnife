@@ -61,7 +61,7 @@ namespace SwissArmyKnife
 
         private void BtnDelete_Click(object sender, EventArgs e)
         {
-            if (lvConfigs.SelectedItems.Count == 0) return;
+            if (lvConfigs.SelectedItems.Count == 0 || lvConfigs.SelectedItems[0].Tag == null) return;
 
 
 

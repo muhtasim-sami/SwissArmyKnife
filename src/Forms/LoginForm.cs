@@ -32,84 +32,7 @@ namespace SwissArmyKnife
                 return Convert.ToBase64String(hashedBytes);
             }
         }
-        /*
-        private bool AuthenticateUser(string username, string password, out int userId, out string role, out bool isActive)
-        {
-            userId = 0;
-            role = "";
-            isActive = false;
-
-            string hashedPassword = HashPassword(password);
-
-            using (SqlConnection conn = new SqlConnection(connectionString))
-            {
-                string query = @"
-                    SELECT u.UserId, u.Username, u.RoleId, r.Name as RoleName, u.IsActive, u.PasswordHash
-                    FROM dbo.Users u
-                    INNER JOIN dbo.Roles r ON u.RoleId = r.RoleId
-                    WHERE u.Username = @Username AND u.PasswordHash = @PasswordHash";
-
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@Username", username);
-                    cmd.Parameters.AddWithValue("@PasswordHash", hashedPassword);
-
-                    conn.Open();
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            userId = reader.GetInt32(0);
-                            role = reader.GetString(3);
-                            isActive = reader.GetBoolean(4);
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
-        }*/
-
-        /*
-        private void UpdateLastLogin(int userId)
-        {
-            using (SqlConnection conn = new SqlConnection(connectionString))
-            {
-                string query = "UPDATE dbo.Users SET LastLogin = @LastLogin WHERE UserId = @UserId";
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@LastLogin", DateTime.UtcNow);
-                    cmd.Parameters.AddWithValue("@UserId", userId);
-                    conn.Open();
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-        */
-
-        /*
-        private void LogAudit(int userId, string action, string targetType, string targetId, string details)
-        {
-            using (SqlConnection conn = new SqlConnection(connectionString))
-            {
-                string query = @"
-                    INSERT INTO dbo.AuditLog (UserId, Action, TargetType, TargetId, Details, CreatedAt)
-                    VALUES (@UserId, @Action, @TargetType, @TargetId, @Details, @CreatedAt)";
-
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@UserId", userId > 0 ? (object)userId : DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Action", action);
-                    cmd.Parameters.AddWithValue("@TargetType", targetType ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@TargetId", targetId ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@Details", details ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@CreatedAt", DateTime.UtcNow);
-                    conn.Open();
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-        */
+        
         private void BtnLogin_Click(object sender, EventArgs e)
         {
             if (isLocked)
@@ -188,9 +111,9 @@ namespace SwissArmyKnife
                 case "RegularUser":
                     dashboard = new RegularUserForm(username, userId);
                     break;
-                case "Viewer":
-                    dashboard = new ViewerForm(username, userId);
-                    break;
+                //case "Viewer":
+                  //  dashboard = new ViewerForm(username, userId);
+                    //break;
                 default:
                     dashboard = new RegularUserForm(username, userId);
                     break;
@@ -262,14 +185,6 @@ namespace SwissArmyKnife
 
         private bool AuthenticateUser(string username, string password)
         {
-            // TODO: Implement actual database authentication
-            // This is temporary demo authentication
-
-            // Demo credentials:
-            // admin / admin123
-            // premium / premium123
-            // regular / regular123
-            // viewer / viewer123
 
             if (username == "admin" && password == "admin123")
                 return true;
