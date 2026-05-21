@@ -101,7 +101,7 @@ namespace Database
         {
             using (SqlConnection conn = GetConnection())
             {
-                string query = "SELECT COUNT(1) FROM dbo.Users WHERE Username = @Username";
+                string query = "SELECT COUNT(*) FROM dbo.Users WHERE Username = @Username";
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@Username", username);

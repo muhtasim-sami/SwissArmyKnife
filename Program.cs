@@ -13,5 +13,23 @@ namespace SwissArmyKnife
             ApplicationConfiguration.Initialize();
             Application.Run(new HomepageForm());
         }
+
+        static void HomepageForm_LoginClick(object sender, EventArgs e)
+        {
+            LoginForm login = new LoginForm();
+            login.ShowDialog();
+        }
+
+        static void HomepageForm_ViewerClick(object sender, EventArgs e)
+        {
+            ViewerForm viewerForm = new ViewerForm();
+            viewerForm.ShowDialog();
+        }
+
+        static void HomepageForm_RegisterClick(object sender, EventArgs e)
+        {
+            RegistrationForm registerForm = new RegistrationForm();
+            registerForm.ShowDialog();
+        }
     }
 }
